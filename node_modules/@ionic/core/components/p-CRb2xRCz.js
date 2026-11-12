@@ -1,0 +1,4 @@
+/*!
+ * (C) Ionic http://ionicframework.com - MIT License
+ */
+import{c as t}from"./p-ChsJlFCQ.js";import{g as i}from"./p-LkEGRiq0.js";const o=(o,r)=>{const a="40px",s="back"===r.direction,n=r.leavingEl,e=i(r.enteringEl),c=e.querySelector("ion-toolbar"),p=t();if(p.addElement(e).fill("both").beforeRemoveClass("ion-page-invisible"),s?p.duration((r.duration??0)||200).easing("cubic-bezier(0.47,0,0.745,0.715)"):p.duration((r.duration??0)||280).easing("cubic-bezier(0.36,0.66,0.04,1)").fromTo("transform",`translateY(${a})`,"translateY(0px)").fromTo("opacity",.01,1),c){const i=t();i.addElement(c),p.addAnimation(i)}if(n&&s){p.duration((r.duration??0)||200).easing("cubic-bezier(0.47,0,0.745,0.715)");const o=t();o.addElement(i(n)).onFinish((t=>{1===t&&o.elements.length>0&&o.elements[0].style.setProperty("display","none")})).fromTo("transform","translateY(0px)",`translateY(${a})`).fromTo("opacity",1,0),p.addAnimation(o)}return p};export{o as mdTransitionAnimation}

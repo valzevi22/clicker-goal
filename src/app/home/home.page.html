@@ -1,0 +1,99 @@
+<ion-content [fullscreen]="true" class="game-content">
+  <div class="stadium-app">
+    <header class="topbar">
+      <a class="brand" href="/home" aria-label="Goal Rush, inicio">
+        <span class="brand-logo">⚽</span>
+        <span class="brand-name">GOAL<span>RUSH</span><small>FOOTBALL CLICKER</small></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="season-pill"><span class="live-dot"></span> TEMPORADA 01</span>
+        <button class="profile" (click)="showReset.set(true)" title="Reiniciar partida" aria-label="Abrir opciones de partida">⚙</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <aside class="left-panel">
+        <div class="panel-label">TU CARRERA</div>
+        <div class="player-card">
+          <div class="player-avatar">👟</div>
+          <div class="player-info"><span>DELANTERO ESTRELLA</span><strong>Nivel {{ playerLevel() }}</strong></div>
+          <div class="level-track"><div [style.width.%]="nextLevelPercent()"></div></div>
+          <small>Tu leyenda empieza en el campo.</small>
+        </div>
+        <div class="stat-box"><span>⚡ POTENCIA POR TIRO</span><strong>+{{ format(game.clickPower()) }}</strong><small>Goles por clic · críticos x3</small></div>
+        <div class="stat-box"><span>⏱ PRODUCCIÓN AUTOMÁTICA</span><strong>+{{ format(game.autoPerSecond()) }}<em> /s</em></strong><small>Incluso sin tocar el balón</small></div>
+        <div class="stat-box"><span>🎯 PROB. DE CRÍTICO</span><strong>{{ (game.criticalChance() * 100).toFixed(0) }}<em> %</em></strong><small>Gol espectacular = x3</small></div>
+        <div class="stats-grid"><div><strong>{{ format(game.clicks()) }}</strong><span>TIROS</span></div><div><strong>{{ game.wins() }}</strong><span>JEFES VENCIDOS</span></div></div>
+        <button class="sidebar-button" (click)="setTab('collection')">🏆 <span>Mi colección</span><b>{{ game.collectedCount() }}/4</b></button>
+      </aside>
+
+      <main class="arena">
+        <div class="currency-top"><span class="currency-caption">⚽ GOLES DISPONIBLES</span><div class="currency-value">{{ format(game.goals()) }} <span>GOLES</span></div><div class="career-total">{{ format(game.lifetime()) }} goles en toda tu carrera</div></div>
+        <div class="arena-background" aria-hidden="true"><div class="stadium-glow"></div><div class="goal-frame"><div class="net"></div></div><div class="field-line"></div></div>
+        @if (game.activeBoss(); as boss) {
+          <div class="boss-card">
+            <div class="boss-head"><span class="boss-icon">{{ bossDetails()?.emoji }}</span><div><small>⚔ DESAFÍO LEGENDARIO</small><strong>{{ bossDetails()?.name }}</strong><span>{{ bossDetails()?.title }}</span></div><div class="boss-timer">{{ boss.remaining }}<small>SEG</small></div></div>
+            <div class="hp-row"><span>VIDA DEL RIVAL</span><b>{{ format(boss.hp) }} / {{ format(boss.maxHp) }}</b></div>
+            <div class="hp-track"><div [style.width.%]="game.bossProgress()"></div></div>
+            <div class="boss-reward">🏆 Premio: {{ format(boss.reward) }} goles + botas exclusivas</div>
+          </div>
+        } @else {
+          <div class="next-boss"><span>⚔</span> PRÓXIMO JEFE EN <strong>{{ game.nextBossIn() }}s</strong></div>
+        }
+        <div class="shot-area">
+          <div class="shoot-hint">TOCA EL BALÓN PARA MARCAR</div>
+          <button class="football-button" (click)="shoot()" aria-label="Disparar y marcar goles"><span class="ball-shine"></span><span class="football-symbol">⚽</span></button>
+          @if (game.lastShot(); as shot) {
+            <div class="shot-feedback" [class.critical]="shot.critical" [attr.data-id]="shot.id">{{ shot.critical ? '¡CRÍTICO! ' : '+' }}{{ format(shot.amount) }} ⚽</div>
+          }
+          <span class="shoot-subtitle">CADA TIRO TE ACERCA A LA GLORIA</span>
+        </div>
+        <div class="game-notice">📣 {{ game.notice() }}</div>
+      </main>
+
+      <aside class="right-panel">
+        <div class="side-title"><div><small>MEJORA TU EQUIPO</small><h2>TIENDA DE BOTAS</h2></div><span>🛒</span></div>
+        <div class="side-subtitle">Las leyendas empiezan con unas botas.</div>
+        <div class="item-list">
+          @for (item of upgrades; track item.id) {
+            <div class="shop-item">
+              <div class="item-icon">{{ item.emoji }}</div>
+              <div class="item-detail"><strong>{{ item.name }}</strong><span>{{ item.subtitle }}</span><small>NIVEL {{ game.level(item.id) }}</small></div>
+              <button class="buy-mini" [disabled]="!game.canBuy(item)" (click)="buy(item)" [attr.aria-label]="'Comprar ' + item.name">{{ game.level(item.id) >= 30 ? 'MÁX' : '⚽ ' + format(game.cost(item)) }}</button>
+            </div>
+          }
+        </div>
+        <button class="full-shop" (click)="setTab('shop')">VER TODAS LAS MEJORAS <span>→</span></button>
+        <div class="legend-card"><div>👑 <strong>BOTAS LEGENDARIAS</strong></div><p>Derrota a los jefes para conseguir botas que no están a la venta.</p><button (click)="setTab('collection')">VER COLECCIÓN →</button></div>
+      </aside>
+    </div>
+    <footer class="footer"><span>⚽ GOAL RUSH · EL CAMINO A LA LEYENDA</span><span>PROGRESO GUARDADO AUTOMÁTICAMENTE <b>●</b></span></footer>
+  </div>
+
+  @if (shopOpen()) {
+    <div class="overlay" (click)="toggleShop()" role="presentation">
+      <section class="modal-shop" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Tienda y colección">
+        <header class="modal-head"><div><span>GOAL RUSH CLUB</span><h2>VESTUARIO DE LEYENDAS</h2></div><button (click)="toggleShop()" aria-label="Cerrar">✕</button></header>
+        <div class="modal-tabs"><button [class.selected]="activeTab() === 'shop'" (click)="activeTab.set('shop')">🛒 TIENDA</button><button [class.selected]="activeTab() === 'collection'" (click)="activeTab.set('collection')">🏆 COLECCIÓN ({{ game.collectedCount() }}/4)</button></div>
+        @if (activeTab() === 'shop') {
+          <p class="modal-description">Invierte tus goles en botas. Cada compra sube su nivel y su precio. ¡Las bonificaciones se acumulan!</p>
+          <div class="modal-grid">
+            @for (item of upgrades; track item.id) {
+              <article class="upgrade-card"><div class="upgrade-top"><span class="upgrade-emoji">{{ item.emoji }}</span><small>{{ item.rarity }}</small></div><h3>{{ item.name }}</h3><div class="upgrade-level">NIVEL {{ game.level(item.id) }} / 30</div><p>{{ item.description }}</p><button [disabled]="!game.canBuy(item)" (click)="buy(item)">{{ game.level(item.id) >= 30 ? 'NIVEL MÁXIMO' : 'COMPRAR · ⚽ ' + format(game.cost(item)) }}</button></article>
+            }
+          </div>
+        } @else {
+          <p class="modal-description">Estas botas no se compran. Solo las consiguen quienes derrotan a una leyenda en el campo.</p>
+          <div class="modal-grid">
+            @for (boss of bosses; track boss.id) {
+              <article class="upgrade-card legend-upgrade" [class.locked]="!game.boots().includes(boss.id)"><div class="upgrade-top"><span class="upgrade-emoji">{{ boss.emoji }}</span><small>{{ game.boots().includes(boss.id) ? 'DESBLOQUEADA' : 'BLOQUEADA' }}</small></div><h3>Botas de {{ boss.name }}</h3><div class="upgrade-level">{{ boss.title }}</div><p>{{ boss.perk }}</p><div class="collection-status">{{ game.boots().includes(boss.id) ? '✓ EQUIPADAS AUTOMÁTICAMENTE' : '🔒 DERROTA A ESTE JEFE' }}</div></article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  }
+  @if (showReset()) {
+    <div class="overlay" (click)="showReset.set(false)" role="presentation"><section class="reset-dialog" (click)="$event.stopPropagation()" role="alertdialog" aria-modal="true" aria-label="Reiniciar partida"><h2>⚙ AJUSTES DE PARTIDA</h2><p>¿Quieres reiniciar? Se perderán tus goles, todas las mejoras y las botas legendarias.</p><div><button class="cancel" (click)="showReset.set(false)">CANCELAR</button><button class="danger" (click)="confirmReset()">BORRAR PROGRESO</button></div></section></div>
+  }
+</ion-content>
